@@ -1,4 +1,5 @@
 import streamlit as st
+from ultralytics import YOLO
 import torch
 from PIL import Image
 import os
@@ -8,6 +9,14 @@ pathlib.PosixPath = pathlib.WindowsPath
 
 st.title("Drowsiness Detection")
 st.markdown("Upload gambar untuk deteksi mengantuk/tidak.")
+
+from ultralytics import YOLO
+
+# Lokasi model (pastikan file model.pt ada)
+model_path = os.path.join(os.path.dirname(__file__), 'best.pt')
+
+# Load model
+model = YOLO(model_path)
 
 # Tentukan path ke folder root YOLOv5 (yang ada hubconf.py)
 # __file__ = path ke app.py, lalu naik satu folder ke root YOLOv5
