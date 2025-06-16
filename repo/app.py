@@ -1,41 +1,28 @@
 import streamlit as st
-from ultralytics import YOLO
 import torch
 from PIL import Image
-import os
-import pathlib
-temp = pathlib.PosixPath
-pathlib.PosixPath = pathlib.WindowsPath
+import numpy as np
 
-st.title("Drowsiness Detection")
-st.markdown("Upload gambar untuk deteksi mengantuk/tidak.")
+# Load model YOLOv5 (pastikan best.pt hasil training YOLOv5)
+model = torch.hub.load('ultralytics/yolov5', 'custom', path='best.pt', force_reload=True)
 
-from ultralytics import YOLO
-
-# Lokasi model (pastikan file model.pt ada)
-model_path = os.path.join(os.path.dirname(__file__), 'best.pt')
-
-# Load model
-model = YOLO(model_path)
-
-# Tentukan path ke folder root YOLOv5 (yang ada hubconf.py)
-# __file__ = path ke app.py, lalu naik satu folder ke root YOLOv5
-repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
-
-# Path lengkap ke model best.pt di subfolder repo/
-model_path = os.path.join(os.path.dirname(__file__), 'best.pt')
-
-# Load model YOLOv5 dengan source lokal (repo_root ada hubconf.py)
-model = torch.hub.load(repo_root, 'custom', path=model_path, source='local', force_reload=True)
+st.title("YOLOv5 Object Detection")
 
 # Upload gambar
-uploaded_file = st.file_uploader("Pilih gambar", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
 
 if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert('RGB')
-    st.image(image, caption='Gambar Diupload', use_column_width=True)
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
-    with st.spinner('Sedang mendeteksi...'):
-        results = model(image)
-        results.render()
-        st.image(results.ims[0], caption='Hasil Deteksi', use_column_width=True)
+    # Konversi ke format numpy
+    img_np = np.array(image)
+
+    # Jalankan deteksi
+    results = model(img_np)
+
+    # Render hasil deteksi langsung ke gambar
+    results.render()  # Memodifikasi results.ims dengan hasil deteksi
+
+    # Tampilkan gambar hasil deteksi
+    st.image(results.ims[0], caption="Detected Image", use_column_width=True)
